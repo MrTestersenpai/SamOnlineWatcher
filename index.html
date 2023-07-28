@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sam Online Video Watcher</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #121212;
+      font-family: Arial, sans-serif;
+      color: #fff;
+    }
+
+    #videoContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 90%;
+      max-width: 800px;
+      background-color: #222;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    #videoPlayer {
+      width: 100%;
+      height: 450px;
+      border-radius: 5px;
+    }
+
+    #videoURLInput {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #007bff;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      background-color: #333;
+      color: #fff;
+      caret-color: #007bff;
+    }
+
+    #playButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      background-color: #007bff;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    #playButton:hover {
+      background-color: #0056b3;
+    }
+
+    #controlsContainer {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    #audioSelect,
+    #subtitleSelect {
+      margin-left: 10px;
+      padding: 5px;
+      border: 1px solid #007bff;
+      border-radius: 5px;
+      background-color: transparent;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    #audioSelect:focus,
+    #subtitleSelect:focus {
+      outline: none;
+    }
+
+    #bottomText {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #ff3333;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="videoContainer">
+    <h1>Sam Online Video Watcher</h1>
+    <input type="text" id="videoURLInput" placeholder="Enter video URL">
+    <button id="playButton">Play Video</button>
+    <div id="videoPlayerContainer" style="display: none;">
+      <video id="videoPlayer" controls>
+        Your browser does not support the video tag.
+      </video>
+    </div>
+    <div id="controlsContainer" style="display: none;">
+      <span>Audio:</span>
+      <select id="audioSelect" disabled>
+        <option selected disabled>No Audio Tracks</option>
+      </select>
+      <span>Subtitles:</span>
+      <select id="subtitleSelect" disabled>
+        <option selected disabled>No Subtitles</option>
+      </select>
+    </div>
+    <div id="bottomText">There is a problem with dual audio, you can't change the audio.</div>
+  </div>
+  <script>
+    const videoURLInput = document.getElementById("videoURLInput");
+    const playButton = document.getElementById("playButton");
+    const videoPlayerContainer = document.getElementById("videoPlayerContainer");
+    const videoPlayer = document.getElementById("videoPlayer");
+    const audioSelect = document.getElementById("audioSelect");
+    const subtitleSelect = document.getElementById("subtitleSelect");
+    let tracksLoaded = false;
+
+    function playVideo() {
+      const videoURL = videoURLInput.value;
+      if (!videoURL) {
+        alert("Please enter a valid video URL.");
+        return;
+      }
+
+      videoPlayer.src = videoURL;
+      videoPlayerContainer.style.display = "block";
+      videoPlayer.play();
+    }
+
+    function loadTracks() {
+  const audioTracks = videoPlayer.audioTracks;
+  const subtitleTracks = videoPlayer.textTracks;
+  audioSelect.innerHTML = "";
+  subtitleSelect.innerHTML = "";
+
+  for (let i = 0; i < audioTracks.length; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = audioTracks[i].label || `Audio ${i + 1}`;
+    audioSelect.appendChild(option);
+  }
+
+  for (let i = 0; i < subtitleTracks.length; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = subtitleTracks[i].label || `Subtitle ${i + 1}`;
+    subtitleSelect.appendChild(option);
+  }
+
+  audioSelect.disabled = audioTracks.length === 0;
+  subtitleSelect.disabled = subtitleTracks.length === 0;
+}
+
+    playButton.addEventListener("click", function () {
+      playVideo();
+      if (!tracksLoaded) {
+        loadTracks();
+        tracksLoaded = true;
+      }
+      document.getElementById("controlsContainer").style.display = "flex";
+    });
+
+    audioSelect.addEventListener("change", function () {
+      const selectedAudioIndex = this.value;
+      videoPlayer.audioTracks[selectedAudioIndex].enabled = true;
+    });
+
+    subtitleSelect.addEventListener("change", function () {
+      const selectedSubtitleIndex = this.value;
+      const selectedSubtitle = subtitleSelect.options[selectedSubtitleIndex].textContent;
+      for (const track of videoPlayer.textTracks) {
+        track.mode = track.label === selectedSubtitle ? "showing" : "hidden";
+      }
+    });
+  </script>
+ 
+</body>
+</html>
